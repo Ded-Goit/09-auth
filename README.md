@@ -6,28 +6,33 @@ NoteHub is a multi-page application for creating, viewing, and managing notes. B
 
 ## 🚀 Features
 
-- 🔍 Search & Filter: Find notes by keyword or category
-- 🧩 Parallel Routes: Sidebar and modal previews with separate data streams
-- 🎛️ Route Interception: Open note details in a modal without full page reload
-- 🗂️ Logical Grouping: (public) and (private) routes without affecting URLs
-- ➕ Create, Edit, Delete: Full CRUD for notes
-- 📝 Standalone Create Page: Dedicated `/notes/action/create` page for note creation
-- 🗂️ Draft Saving: Auto-save your note draft while typing (Zustand + localStorage)
-- 🔒 Persistent Drafts: Resume your note later — even after closing the tab
-- 🧠 SSR & CSR: Mix of server- and client-side rendering for best performance
-- ⚡ Data Caching: Powered by TanStack Query
-- 📈 Improved SEO: Dynamic metadata & Open Graph tags for better visibility
-- 🎨 Styled with CSS Modules: Clean, modular styling
-- ⏳ Loading Indicators: Uses React Spinners for smooth UX
+- 🔐 **Authentication & Authorization** — register, sign in, session check, and sign out
+- 🗂️ **Protected Routes** — `/profile` and `/notes` are accessible only to authenticated users
+- 🔄 **SSR & CSR** — combines server-side and client-side rendering for optimal performance
+- 🍪 **Tokens in Cookies** — all API requests send secure tokens via cookies
+- ⚡ **TanStack Query** — handles API state, caching, and mutations on the client
+- 🧩 **App Router** — routes organized with layout scopes (`(auth routes)`, `(private-routes)`)
+- 🎨 **CSS Modules** — clean, modular component styling
+- ✅ **TypeScript** — strict type safety for all components and API logic
+- ⚙️ **Axios Instance** — separate client/server configuration with `withCredentials` for cookies
+- 🔄 **Middleware Protection** — Next.js `middleware.ts` redirects unauthorized users
+- 🗝️ **Zustand Store** — global state management for auth status and user data
+- ✏️ **Profile Edit** — edit your profile directly in a secure route
 
 ## 🗂 Project structure
 
-           08-zustand/
-           ├── 📁app/         # App Router: routing, pages, layout, loading/error
-           ├── 📁components/  # All UI components
-           ├── 📁lib/         # API logic
+           09-auth/
+           ├── 📁app/         # App Router: pages, layouts, private and auth routes
+           │ ├──  (auth routes)/ # Public routes: sign-in and sign-up
+           │ ├──  (private-routes)/ # Private routes: profile and notes
+           │ └──  api/ # Server routes for auth and notes API
+           ├── 📁components/  # Reusable UI components
+           ├── 📁lib/         # API logic, Zustand store
+           │ ├──  api/ # api.ts, clientApi.ts, serverApi.ts
+           │ └──  store/ # Zustand store for auth state
            ├── 📁public/      # Static files (favicon, images, screenshots)
-           ├── 📁types/       # Common TypeScript types (Note interfaces, etc.)
+           ├── 📁types/        # Shared TypeScript types (User, Note)
+           ├── 📄middleware.ts # Middleware for route protection
            ├── 📄.gitignore        # List files/folders that Git ignores
            ├── 📄.prettierrс       # Prettier configuration
            ├── 📄README.md         # Project documentation and setup instructions.
@@ -55,25 +60,48 @@ NoteHub uses [Zustand](https://github.com/pmndrs/zustand) with the `persist` mid
 - [CSS Modules](https://github.com/css-modules/css-modules)
 - [React Spinners](https://www.davidhu.io/react-spinners/)
 
-## 📦 Getting Started
+## 📌 Main Pages
 
-First, run the development server:
+| Route           | Type    | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `/sign-in`      | Public  | User login page                |
+| `/sign-up`      | Public  | User registration page         |
+| `/profile`      | Private | User profile page              |
+| `/profile/edit` | Private | Edit user profile              |
+| `/notes`        | Private | Notes list & management (CRUD) |
+
+## 📡 API Endpoints
+
+Base URL: `https://notehub-api.goit.study`
+
+- `POST /auth/register` — register new user
+- `POST /auth/login` — sign in user
+- `POST /auth/logout` — log out user
+- `GET /auth/session` — check active session
+- `GET /users/me` — get user profile
+- `PATCH /users/me` — update user profile
+- `GET /notes` — get list of notes
+- `POST /notes` — create note
+- `DELETE /notes/:id` — delete note
+
+Most requests require valid cookies for authorization.
+
+## ⚙️ Getting Started
+
+1️⃣ Clone the repository  
+2️⃣ Install dependencies
 
 ```bash
+npm install
+3️⃣ Add .env file:
+
+env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+4️⃣ Run the development server:
+
+bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5️⃣ Open http://localhost:3000 in your browser.
 
 ## Learn More
 
@@ -93,3 +121,4 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 📄 License
 This project is licensed under the MIT License.
+```

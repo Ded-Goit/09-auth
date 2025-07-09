@@ -86,6 +86,8 @@ Base URL: `https://notehub-api.goit.study`
 
 Most requests require valid cookies for authorization.
 
+---
+
 ## ⚙️ Getting Started
 
 1️⃣ Clone the repository  
@@ -103,6 +105,12 @@ bash
 npm run dev
 5️⃣ Open http://localhost:3000 in your browser.
 
+✅ Deployment
+Deploy easily on Vercel.
+Make sure NEXT_PUBLIC_API_URL points to your deployed Vercel URL.
+
+📄 License
+MIT License.
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -119,6 +127,4 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-📄 License
-This project is licensed under the MIT License.
 ```

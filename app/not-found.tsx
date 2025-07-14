@@ -1,6 +1,6 @@
 // app/not-found.tsx
 import { Metadata } from "next"; // Імпортуємо тип Metadata
-import css from "./Home.module.css";
+import css from "./page.module.css";
 import Link from "next/link";
 
 export const metadata: Metadata = {

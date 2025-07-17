@@ -10,7 +10,17 @@ import { User } from "@/types/user";
 export interface CreateNoteValues {
   title: string;
   content?: string;
-  tag: "Work" | "Personal" | "Meeting" | "Shopping" | "Todo";
+  tag:
+    | "Work"
+    | "Personal"
+    | "Meeting"
+    | "Shopping"
+    | "Ideas"
+    | "Travel"
+    | "Finance"
+    | "Health"
+    | "Important"
+    | "Todo";
 }
 
 interface NotesResponse {

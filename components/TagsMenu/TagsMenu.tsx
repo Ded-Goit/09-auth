@@ -5,7 +5,18 @@ import css from "./TagsMenu.module.css";
 import { useState } from "react";
 
 const TagsMenu = () => {
-  const tags: string[] = ["Work", "Personal", "Meeting", "Shopping", "Todo"];
+  const tags: string[] = [
+    "Work",
+    "Personal",
+    "Meeting",
+    "Shopping",
+    "Ideas",
+    "Travel",
+    "Finance",
+    "Health",
+    "Important",
+    "Todo",
+  ];
   const [isOpenMenu, setIsOpenMenu] = useState(false);
 
   const handleOpenMenu = () => {

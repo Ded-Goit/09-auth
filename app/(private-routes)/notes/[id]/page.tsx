@@ -4,9 +4,9 @@ import {
   HydrationBoundary,
   dehydrate,
 } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api/clientApi";
 import NoteDetailsClient from "./NoteDetails.client";
 import { Metadata } from "next";
+import { fetchServerNoteById } from "@/lib/api/serverApi";
 
 type NoteDetailsProps = {
   params: Promise<{ id: string }>;
@@ -16,36 +16,15 @@ export async function generateMetadata({
   params,
 }: NoteDetailsProps): Promise<Metadata> {
   const { id } = await params;
-  const note = await fetchNoteById(id);
 
-  if (!note) {
-    return {
-      title: "Note not found | NoteHub",
-      description: "The requested note does not exist.",
-      openGraph: {
-        title: "Note not found | NoteHub",
-        description: "The requested note does not exist.",
-        url: `https://08-zustand-puce.vercel.app/notes/${id}`,
-        images: [
-          {
-            url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-            width: 1200,
-            height: 630,
-            alt: "Note Details",
-          },
-        ],
-      },
-    };
-  }
+  const note = await fetchServerNoteById(id);
 
   return {
     title: note.title,
-    description:
-      note.content?.slice(0, 100) || "Details about this note on NoteHub.",
+    description: note.content.slice(0, 100),
     openGraph: {
       title: note.title,
-      description:
-        note.content?.slice(0, 100) || "Details about this note on NoteHub.",
+      description: note.content.slice(0, 100),
       url: `https://08-zustand-puce.vercel.app/notes/${id}`,
       images: [
         {
@@ -58,22 +37,20 @@ export async function generateMetadata({
     },
   };
 }
-async function NoteDetails({ params }: NoteDetailsProps) {
-  const { id } = await params;
+
+export default async function NoteDetails({ params }: NoteDetailsProps) {
   const queryClient = new QueryClient();
-  const parseId = Number(id);
-  queryClient.prefetchQuery({
-    queryKey: ["note", parseId],
-    queryFn: () => fetchNoteById(id),
+
+  const { id } = await params;
+
+  await queryClient.prefetchQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchServerNoteById(id),
   });
 
   return (
-    <>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <NoteDetailsClient />
-      </HydrationBoundary>
-    </>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NoteDetailsClient />
+    </HydrationBoundary>
   );
 }
-
-export default NoteDetails;

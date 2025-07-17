@@ -18,18 +18,15 @@ export async function generateMetadata({
 }: NotesProps): Promise<Metadata> {
   const { slug } = await params;
 
-  function capitalize(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  const tagName = slug[0] === "all" ? "All notes" : capitalize(slug[0]);
+  const title = slug[0] === "all" ? "All notes" : slug[0];
+  const description = `This page contains notes from the category ${title}`;
 
   return {
-    title: tagName,
-    description: `This page contains notes from the category ${tagName}.`,
+    title,
+    description,
     openGraph: {
-      title: tagName,
-      description: `This page contains notes from the category ${tagName}.`,
+      title,
+      description,
       url: `https://08-zustand-puce.vercel.app/notes/filter/${slug[0]}`,
       images: [
         {
@@ -44,44 +41,27 @@ export async function generateMetadata({
 }
 
 export default async function Notes({ params }: NotesProps) {
-  const resolvedParams = await params;
-
-  // Перевірка slug
-  const slug = resolvedParams?.slug;
-  const tag =
-    Array.isArray(slug) && slug.length > 0 && slug[0] !== "all" ? slug[0] : "";
+  const { slug } = await params;
 
   const queryClient = new QueryClient();
-
   const initialQuery: string = "";
   const initialPage: number = 1;
+  const tag: string = slug[0] === "all" ? "" : slug[0];
 
-  try {
-    await queryClient.prefetchQuery({
-      queryKey: ["notes", initialQuery, initialPage, tag],
-      queryFn: () => fetchNotes(initialQuery, initialPage, tag),
-    });
-  } catch (error) {
-    console.error("Error prefetching notes:", error);
-  }
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", initialQuery, initialPage, tag],
+    queryFn: () => fetchNotes(initialQuery, initialPage, tag),
+  });
 
   const initialData = queryClient.getQueryData([
     "notes",
     initialQuery,
     initialPage,
     tag,
-  ]) as
-    | {
-        notes: Note[];
-        totalPages: number;
-      }
-    | undefined;
-
-  // Перевірка initialData
-  if (!initialData || !Array.isArray(initialData.notes)) {
-    console.warn("No valid initial data for notes.");
-    return <p>Failed to load notes.</p>;
-  }
+  ]) as {
+    notes: Note[];
+    totalPages: number;
+  };
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

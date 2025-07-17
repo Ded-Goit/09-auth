@@ -1,27 +1,51 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import css from "./AuthNavigation.module.css";
 import Link from "next/link";
-import { useAuthStore } from "@/lib/store/authStore";
-import { logout } from "@/lib/api/clientApi";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store/authStore";
+import { logout, getUserProfile } from "@/lib/api/clientApi";
 
-const AuthNavigation = () => {
-  const isAuth = useAuthStore((state) => state.isAuthenticated);
-  const user = useAuthStore((state) => state.user);
-  const clear = useAuthStore((state) => state.clearIsAuthenticated);
+export default function AuthNavigation() {
+  const {
+    isAuthenticated,
+    user,
+    setIsAuthenticated,
+    setUser,
+    clearIsAuthenticated,
+  } = useAuthStore();
   const router = useRouter();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+
+    const initializeAuth = async () => {
+      try {
+        const user = await getUserProfile();
+        setIsAuthenticated(true);
+        setUser(user);
+      } catch {
+        clearIsAuthenticated();
+      }
+    };
+
+    initializeAuth();
+  }, [setIsAuthenticated, setUser, clearIsAuthenticated]);
+
+  if (!hasMounted) return null;
 
   const handleLogout = async () => {
     await logout();
-    clear();
+    clearIsAuthenticated();
     router.push("/sign-in");
     router.refresh();
   };
 
   return (
     <>
-      {isAuth ? (
+      {isAuthenticated ? (
         <>
           <li className={css.navigationItem}>
             <Link
@@ -33,8 +57,8 @@ const AuthNavigation = () => {
             </Link>
           </li>
           <li className={css.navigationItem}>
-            <p className={css.userEmail}>{user?.email}</p>
-            <button className={css.logoutButton} onClick={handleLogout}>
+            {user?.email && <p className={css.userEmail}>{user.email}</p>}
+            <button onClick={handleLogout} className={css.logoutButton}>
               Logout
             </button>
           </li>
@@ -63,6 +87,4 @@ const AuthNavigation = () => {
       )}
     </>
   );
-};
-
-export default AuthNavigation;
+}

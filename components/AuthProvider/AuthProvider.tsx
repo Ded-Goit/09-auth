@@ -1,42 +1,47 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import React, { ReactNode, useEffect, useState } from "react";
+import { checkSession } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
+import { PropagateLoader } from "react-spinners";
 
-export default function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export default function AuthProvider({ children }: AuthProviderProps) {
+  const setUser = useAuthStore((state) => state.setUser);
+  const clearIsAuthenticated = useAuthStore(
+    (state) => state.clearIsAuthenticated
+  );
+
   const [loading, setLoading] = useState(true);
-  const { setUser, clearIsAuthenticated } = useAuthStore();
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    const checkSession = async () => {
+    async function initializeAuth() {
       try {
-        const res = await fetch("/api/auth/session");
-        if (res.ok) {
-          const user = await res.json();
-          setUser(user);
+        const sessionUser = await checkSession();
+        if (sessionUser && sessionUser.email) {
+          setUser(sessionUser);
         } else {
           clearIsAuthenticated();
-          if (
-            pathname.startsWith("/profile") ||
-            pathname.startsWith("/notes")
-          ) {
-            router.push("/sign-in");
-          }
         }
       } catch {
         clearIsAuthenticated();
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    checkSession();
-  }, [pathname, setUser, clearIsAuthenticated, router]);
+    initializeAuth();
+  }, [setUser, clearIsAuthenticated]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div>
+        <PropagateLoader color="#0d6efd" size={11} speedMultiplier={2} />
+      </div>
+    );
 
   return <>{children}</>;
 }

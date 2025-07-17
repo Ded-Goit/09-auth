@@ -16,7 +16,7 @@ export async function fetchServerNoteById(id: string): Promise<Note> {
   return data;
 }
 
-export const checkSession = async () => {
+export const checkServerSession = async () => {
   const cookieStore = await cookies();
   const res = await nextServer.get<CheckSessionResult>("/auth/session", {
     headers: {

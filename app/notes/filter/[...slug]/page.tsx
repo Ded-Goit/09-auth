@@ -1,5 +1,5 @@
 //app/notes/filter/[...slug]\page.tsx
-import { fetchNotes } from "@/lib/api";
+import { fetchNotes } from "@/lib/api/clientApi";
 import {
   QueryClient,
   HydrationBoundary,

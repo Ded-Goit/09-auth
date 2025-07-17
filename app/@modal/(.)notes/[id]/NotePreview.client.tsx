@@ -5,7 +5,7 @@ import Modal from "@/components/Modal/Modal";
 import css from "./NotePreview.module.css";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
+import { fetchNoteById } from "@/lib/api/clientApi";
 import { PropagateLoader } from "react-spinners";
 
 export default function NotePreviewClient() {
@@ -20,7 +20,7 @@ export default function NotePreviewClient() {
     error,
   } = useQuery({
     queryKey: ["note", parseId],
-    queryFn: () => fetchNoteById(parseId),
+    queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
   });
 

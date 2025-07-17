@@ -1,35 +1,77 @@
 //app/(auth routes)/sign-up/page.tsx
 "use client";
 
-import { registerUser } from "@/lib/api/clientApi";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 import css from "./SignUpPage.module.css";
-import { AxiosError } from "axios";
+import { registerUser } from "@/lib/api/clientApi";
+import { RegisterRequest } from "@/types/noteApi";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAuthStore } from "@/lib/store/authStore";
+import * as Yup from "yup";
+import { RegisterFormValues } from "@/types/noteApi";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required("Email is required")
+    .email("Enter a valid email address"),
+  password: Yup.string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters"),
+});
 
 export default function SignUpPage() {
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
   const [error, setError] = useState("");
-
-  const mutation = useMutation({
-    mutationFn: registerUser,
-    onSuccess: () => {
-      router.push("/profile");
-    },
-    onError: (err: AxiosError<{ message: string }>) => {
-      // Очікується помилка з message
-      setError(err?.response?.data?.message || "Registration failed");
-    },
+  const [formRegisterData, setRegisterFormData] = useState<RegisterFormValues>({
+    email: "",
+    password: "",
   });
+
+  async function validateRegister(
+    data: RegisterFormValues
+  ): Promise<string | null> {
+    try {
+      await validationSchema.validate(data, { abortEarly: false });
+      return null;
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        return err.errors[0];
+      }
+      return "Unknown validation error";
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterFormData((data) => ({
+      ...data,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    setError("");
 
-    mutation.mutate({ email, password });
+    const errorValidation = await validateRegister(formRegisterData);
+    if (errorValidation) {
+      setError(errorValidation);
+      return;
+    }
+
+    try {
+      const user = await registerUser(formRegisterData as RegisterRequest);
+      if (user) {
+        setUser(user);
+        router.push("/profile");
+      } else {
+        setError("Invalid registration data");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Registration failed. Try again.");
+    }
   };
 
   return (
@@ -44,6 +86,8 @@ export default function SignUpPage() {
             name="email"
             className={css.input}
             required
+            value={formRegisterData.email}
+            onChange={handleChange}
           />
         </div>
 
@@ -55,16 +99,14 @@ export default function SignUpPage() {
             name="password"
             className={css.input}
             required
+            value={formRegisterData.password}
+            onChange={handleChange}
           />
         </div>
 
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Registering..." : "Register"}
+          <button type="submit" className={css.submitButton}>
+            Register
           </button>
         </div>
 

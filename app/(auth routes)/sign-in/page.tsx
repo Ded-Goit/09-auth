@@ -1,34 +1,78 @@
 //app/(auth routes)/sign-in/page.tsx
 "use client";
 
-import { loginUser } from "@/lib/api/clientApi";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { loginUser } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
 import css from "./SignInPage.module.css";
-import { AxiosError } from "axios";
+import * as Yup from "yup";
+
+const validationSchema = Yup.object().shape({
+  email: Yup.string()
+    .required("Email is required")
+    .email("Enter a valid email address"),
+  password: Yup.string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters"),
+});
 
 export default function SignInPage() {
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
   const [error, setError] = useState("");
 
-  const mutation = useMutation({
-    mutationFn: loginUser,
-    onSuccess: () => {
-      router.push("/profile");
-    },
-    onError: (err: AxiosError<{ message: string }>) => {
-      setError(err.response?.data?.message || "Login failed");
-    },
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const validateForm = async () => {
+    try {
+      await validationSchema.validate(formData, { abortEarly: false });
+      return null;
+    } catch (err) {
+      if (err instanceof Yup.ValidationError) {
+        return err.errors[0];
+      }
+      return "Validation failed";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    setError("");
 
-    mutation.mutate({ email, password });
+    const validationError = await validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      const user = await loginUser(formData);
+      if (user) {
+        setUser(user);
+        router.push("/profile");
+      } else {
+        setError("Invalid login data");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Login failed. Try again.");
+      }
+    }
   };
 
   return (
@@ -44,6 +88,8 @@ export default function SignInPage() {
             name="email"
             className={css.input}
             required
+            value={formData.email}
+            onChange={handleChange}
           />
         </div>
 
@@ -55,20 +101,18 @@ export default function SignInPage() {
             name="password"
             className={css.input}
             required
+            value={formData.password}
+            onChange={handleChange}
           />
         </div>
 
         <div className={css.actions}>
-          <button
-            type="submit"
-            className={css.submitButton}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Logging in..." : "Log in"}
+          <button type="submit" className={css.submitButton}>
+            Log in
           </button>
         </div>
 
-        {error && <p className={css.error}>{error}</p>}
+        <p className={css.error}>{error}</p>
       </form>
     </main>
   );

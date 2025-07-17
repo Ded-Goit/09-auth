@@ -1,3 +1,4 @@
+//app/(auth routes)/sign-up/page.tsx
 "use client";
 
 import { registerUser } from "@/lib/api/clientApi";

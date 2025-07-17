@@ -1,4 +1,4 @@
-// app/notes/action/create/page.tsx
+// app/(private-routes)/notes/action/create/page.tsx
 import { Metadata } from "next"; //  Додаємо тип Metadata
 import NoteForm from "@/components/NoteForm/NoteForm";
 import css from "./CreateNote.module.css";

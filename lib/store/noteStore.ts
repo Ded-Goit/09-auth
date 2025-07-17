@@ -1,38 +1,41 @@
 //lib/store/noteStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { CreateNoteValues } from "../api/clientApi";
 
-export interface NoteDraft {
-  title: string;
-  content: string;
-  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
-}
-
-interface NoteStore {
-  draft: NoteDraft;
-  setDraft: (note: Partial<NoteDraft>) => void;
+type NoteDraftStore = {
+  draft: CreateNoteValues;
+  setDraft: (note: Partial<CreateNoteValues>) => void;
   clearDraft: () => void;
-}
+};
 
-const initialDraft: NoteDraft = {
+const initialDraft: CreateNoteValues = {
   title: "",
   content: "",
   tag: "Todo",
 };
 
-export const useNoteStore = create<NoteStore>()(
+export const useNoteDraftStore = create<NoteDraftStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       draft: initialDraft,
       setDraft: (note) =>
-        set((state) => ({
-          draft: { ...state.draft, ...note },
+        set(() => ({
+          draft: {
+            ...get().draft,
+            ...note,
+          },
         })),
-      clearDraft: () => set({ draft: initialDraft }),
+      clearDraft: () =>
+        set(() => ({
+          draft: initialDraft,
+        })),
     }),
     {
       name: "note-draft",
-      partialize: (state) => ({ draft: state.draft }), //  Зберігаємо тільки draft
+      partialize: (state) => ({
+        draft: state.draft,
+      }),
     }
   )
 );

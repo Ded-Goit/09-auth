@@ -1,11 +1,16 @@
 // types/note.ts
-export type NoteTag = "Work" | "Personal" | "Meeting" | "Shopping" | "Todo";
 
 export interface Note {
   id: string;
   title: string;
-  content?: string;
-  tag: NoteTag;
+  content: string;
+  tag: string;
   createdAt: string;
   updatedAt: string;
 }
+
+export type CreateNotePayload = {
+  title: string;
+  content: string;
+  tag: string;
+};

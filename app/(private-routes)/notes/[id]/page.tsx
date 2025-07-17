@@ -1,4 +1,4 @@
-//app/notes/[id]/page.tsx
+//app/(private-routes)/notes/[id]/page.tsx
 import {
   QueryClient,
   HydrationBoundary,

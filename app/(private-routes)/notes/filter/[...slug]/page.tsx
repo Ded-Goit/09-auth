@@ -1,4 +1,4 @@
-//app/notes/filter/[...slug]\page.tsx
+//app/(private-routes)/notes/filter/[...slug]/page.tsx
 import { fetchNotes } from "@/lib/api/clientApi";
 import {
   QueryClient,

@@ -1,27 +1,7 @@
-//lesson
-/**import { Note } from "@/lib/api";
-import NoteItem from "../NoteItem/NoteItem";
-
-type Props = {
-  notes: Note[];
-};
-
-const NoteList = ({ notes }: Props) => {
-  return (
-    <ul>
-      {notes.map((note) => (
-        <NoteItem key={note.id} item={note} />
-      ))}
-    </ul>
-  );
-};
-
-export default NoteList;*/
-//old file
 import cssStyles from "./NoteList.module.css";
 import type { Note } from "../../types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteNote } from "@/lib/api";
+import { deleteNote } from "@/lib/api/clientApi";
 import Loading from "@/app/loading";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import { useState } from "react";
@@ -33,7 +13,6 @@ interface NoteListProps {
 
 export default function NoteList({ notes }: NoteListProps) {
   const [deletingNoteId, setDeletingNoteId] = useState<Note["id"] | null>(null);
-
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -49,7 +28,7 @@ export default function NoteList({ notes }: NoteListProps) {
 
   const { isError } = mutation;
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: Note["id"]) => {
     setDeletingNoteId(id);
     mutation.mutate(id);
   };
@@ -64,7 +43,9 @@ export default function NoteList({ notes }: NoteListProps) {
               <p className={cssStyles.content}>{note.content}</p>
               <div className={cssStyles.footer}>
                 <span className={cssStyles.tag}>{note.tag}</span>
-                <Link href={`/notes/${note.id}`} className={cssStyles.link}>View details</Link>
+                <Link href={`/notes/${note.id}`} className={cssStyles.link}>
+                  View details
+                </Link>
                 <button
                   className={cssStyles.button}
                   onClick={() => handleDelete(note.id)}

@@ -1,69 +1,70 @@
 //app/@modal/(.)notes/[id]/NotePreview.client.tsx
 "use client";
 
-import Modal from "@/components/Modal/Modal";
-import css from "./NotePreview.module.css";
 import { useParams, useRouter } from "next/navigation";
+import Modal from "@/components/Modal/Modal";
 import { useQuery } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api/clientApi";
-import { PropagateLoader } from "react-spinners";
+import css from "./NotePreview.module.css";
 
 export default function NotePreviewClient() {
   const router = useRouter();
-  const closeModal = () => router.back();
-  const { id } = useParams<{ id: string }>();
-  const parseId = Number(id);
+  const id = useParams<{ id: string }>().id;
+
+  const closeModal = () => {
+    router.back();
+  };
 
   const {
     data: note,
     isLoading,
     error,
+    isSuccess,
+    isError,
   } = useQuery({
-    queryKey: ["note", parseId],
+    queryKey: ["note", id],
     queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
   });
 
-  if (isLoading)
-    return (
-      <div>
-        <PropagateLoader color="#0d6efd" size={11} speedMultiplier={2} />
-      </div>
-    );
-
-  if (error) return <p>Something went wrong.</p>;
-  if (!note) return <p>Sorry, note not found.</p>;
-
-  const formatDate = (isoDate: string): string => {
-    const date = new Date(isoDate);
-    return date.toLocaleString("uk-UA", {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("uk-UA", {
       day: "2-digit",
       month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
+    }).format(date);
   };
-
-  const formattedDate = note.updatedAt
-    ? `Updated at: ${formatDate(note.updatedAt)}`
-    : `Created at: ${formatDate(note.createdAt)}`;
 
   return (
     <Modal onClose={closeModal}>
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <h2>{note.title}</h2>
-            <button className={css.backBtn} onClick={closeModal}>
-              Back
-            </button>
+      {isLoading && <p className={css.loadMessage}>Loading, please wait...</p>}
+      {!error && !note && !isLoading && (
+        <p className={css.errorMessage}>Not found</p>
+      )}
+      {isError && <p className={css.errorMessage}>Not found</p>}
+      {note && isSuccess && (
+        <div className={css.container}>
+          <div className={css.item}>
+            <div className={css.header}>
+              <h2>{note.title}</h2>
+              <button className={css.backBtn} onClick={closeModal}>
+                Back
+              </button>
+            </div>
+            <p className={css.content}>{note.content}</p>
+            <p className={css.tag}>{note.tag}</p>
+            <p className={css.date}>
+              {note.updatedAt
+                ? `Updated at: ${formatDate(note.updatedAt)}`
+                : `Created at: ${formatDate(note.createdAt)}`}
+            </p>
           </div>
-          <p className={css.content}>{note.content}</p>
-          <p className={css.tag}>{note.tag}</p>
-          <p className={css.date}>{formattedDate}</p>
         </div>
-      </div>
+      )}
     </Modal>
   );
 }

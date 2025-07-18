@@ -5,12 +5,13 @@ import type { Metadata } from "next";
 import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 const roboto = Roboto({
-  subsets: ["latin", "cyrillic"], // також підтримка української кирилиці
-  weight: ["400", "500", "700"], // потрібні товщини
-  variable: "--font-roboto", // змінна CSS
-  display: "swap", // рекомендація для швидкого рендеру
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "700"],
+  variable: "--font-roboto",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,10 +43,12 @@ export default function RootLayout({
     <html lang="en" className={roboto.variable}>
       <body>
         <TanStackProvider>
-          <Header />
-          <main className="layout-main">{children}</main>
-          <Footer />
-          {modal}
+          <AuthProvider>
+            <Header />
+            <main className="layout-main">{children}</main>
+            <Footer />
+            {modal}
+          </AuthProvider>
         </TanStackProvider>
       </body>
     </html>

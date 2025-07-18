@@ -5,7 +5,6 @@ import { Note } from "@/types/note";
 import { User } from "@/types/user";
 import { CheckSessionResult } from "@/types/noteApi";
 
-// Якщо викликаєш із Server Component:
 const serverApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL + "/api",
   withCredentials: true,
@@ -23,14 +22,14 @@ export async function fetchServerNoteById(id: string): Promise<Note> {
   return data;
 }
 
-export const checkServerSession = async (): Promise<CheckSessionResult> => {
+export const checkSession = async () => {
   const cookieStore = await cookies();
-  const { data } = await serverApi.get<CheckSessionResult>("/auth/session", {
+  const res = await serverApi.get<CheckSessionResult>("/auth/session", {
     headers: {
       Cookie: cookieStore.toString(),
     },
   });
-  return data;
+  return res;
 };
 
 export const getServerMe = async (): Promise<User> => {

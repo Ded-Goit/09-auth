@@ -3,7 +3,7 @@
 **NoteHub** is a multi-page note-taking app for creating, viewing, and managing your notes.  
 Built with **Next.js App Router**, **TypeScript**, **TanStack Query**, **Axios**, **Zustand**, and **CSS Modules**.
 
-![NoteHub Screenshot](https://github.com/Ded-Goit/09-auth/public/note_hub.png)
+![NoteHub Screenshot](https://raw.githubusercontent.com/Ded-Goit/09-auth/main/public/note_hub.png)
 
 ## 🚀 Features
 

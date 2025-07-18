@@ -1,23 +1,23 @@
 #### # 📝 NoteHub
 
-NoteHub is a multi-page application for creating, viewing, and managing notes. Built using **Next.js App Router**, **TypeScript**, **React Query (TanStack)**, **Axios**, and **CSS Modules**.
+**NoteHub** is a multi-page note-taking app for creating, viewing, and managing your notes.  
+Built with **Next.js App Router**, **TypeScript**, **TanStack Query**, **Axios**, **Zustand**, and **CSS Modules**.
 
-![NoteHub Screenshot](https://github.com/Ded-Goit/06-notehub-nextjs/blob/main/public/note_hub.png)
+![NoteHub Screenshot](https://github.com/Ded-Goit/09-auth/public/note_hub.png)
 
 ## 🚀 Features
 
 - 🔐 **Authentication & Authorization** — register, sign in, session check, and sign out
 - 🗂️ **Protected Routes** — `/profile` and `/notes` are accessible only to authenticated users
-- 🔄 **SSR & CSR** — combines server-side and client-side rendering for optimal performance
-- 🍪 **Tokens in Cookies** — all API requests send secure tokens via cookies
-- ⚡ **TanStack Query** — handles API state, caching, and mutations on the client
+- ⚙️ **Middleware Protection** — `middleware.ts` automatically redirects unauthorized users
+- 🔄 **SSR & CSR** — combines server-side and client-side rendering for better performance
+- 🍪 **Tokens in Cookies** — `accessToken` and `refreshToken` are stored in secure HTTP-only cookies
+- ⚡ **TanStack Query** — handles API state, caching, and mutations
 - 🧩 **App Router** — routes organized with layout scopes (`(auth routes)`, `(private-routes)`)
-- 🎨 **CSS Modules** — clean, modular component styling
-- ✅ **TypeScript** — strict type safety for all components and API logic
-- ⚙️ **Axios Instance** — separate client/server configuration with `withCredentials` for cookies
-- 🔄 **Middleware Protection** — Next.js `middleware.ts` redirects unauthorized users
-- 🗝️ **Zustand Store** — global state management for auth status and user data
-- ✏️ **Profile Edit** — edit your profile directly in a secure route
+- 🎨 **CSS Modules** — modular styling for all UI components
+- ✅ **TypeScript** — full type safety across the project
+- 🔑 **Zustand Store** — global state for authentication and user data
+- ✏️ **Profile Edit** — edit your profile securely inside protected routes
 
 ## 🗂 Project structure
 
@@ -42,23 +42,7 @@ NoteHub is a multi-page application for creating, viewing, and managing notes. B
            ├── 📄package.json      # Main dependency, script, and project description file
            └── 📄tsconfig.json     # Configuration for TypeScript compiler
 
-## 💡 How Drafts Work
-
-NoteHub uses [Zustand](https://github.com/pmndrs/zustand) with the `persist` middleware to store your note draft in `localStorage`. This means:
-
-- Your unsaved work is always safe
-- The draft is loaded automatically when you revisit `/notes/action/create`
-- The draft is cleared automatically when you successfully create a note
-
-## ⚙️ Technologies
-
-- [Next.js 15+ (App Router)](https://nextjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [TanStack Query (React Query)](https://tanstack.com/query/latest)
-- [Axios](https://axios-http.com/)
-- [Zustand + Persist](https://github.com/pmndrs/zustand)
-- [CSS Modules](https://github.com/css-modules/css-modules)
-- [React Spinners](https://www.davidhu.io/react-spinners/)
+---
 
 ## 📌 Main Pages
 
@@ -70,61 +54,107 @@ NoteHub uses [Zustand](https://github.com/pmndrs/zustand) with the `persist` mid
 | `/profile/edit` | Private | Edit user profile              |
 | `/notes`        | Private | Notes list & management (CRUD) |
 
+---
+
 ## 📡 API Endpoints
 
-Base URL: `https://notehub-api.goit.study`
+**Base URL:** `{YOUR_SITE_URL}/api`
 
-- `POST /auth/register` — register new user
-- `POST /auth/login` — sign in user
-- `POST /auth/logout` — log out user
-- `GET /auth/session` — check active session
-- `GET /users/me` — get user profile
-- `PATCH /users/me` — update user profile
-- `GET /notes` — get list of notes
-- `POST /notes` — create note
-- `DELETE /notes/:id` — delete note
+| Method | Endpoint         | Description              |
+| ------ | ---------------- | ------------------------ |
+| POST   | `/auth/register` | Register a new user      |
+| POST   | `/auth/login`    | Sign in user             |
+| POST   | `/auth/logout`   | Log out user             |
+| GET    | `/users/me`      | Get current user profile |
+| PATCH  | `/users/me`      | Update user profile      |
+| GET    | `/notes`         | Get list of notes        |
+| POST   | `/notes`         | Create a note            |
+| DELETE | `/notes/:id`     | Delete a note            |
 
-Most requests require valid cookies for authorization.
+> 🔒 **Most requests require valid cookies for authentication.**
 
 ---
 
-## ⚙️ Getting Started
+## 🔑 How Authentication Works
 
-1️⃣ Clone the repository  
-2️⃣ Install dependencies
+- After sign-in, the server sets `accessToken` and `refreshToken` as HTTP-only cookies.
+- All protected routes check for a valid `accessToken`.
+- If the `accessToken` expires, the `middleware.ts` uses the `refreshToken` to renew the session automatically.
 
-```bash
-npm install
-3️⃣ Add .env file:
+---
 
-env
+## 💡 How Drafts Work
+
+NoteHub uses [Zustand](https://github.com/pmndrs/zustand) with the `persist` middleware to store your note drafts in `localStorage`. This means:
+
+- Your unsaved drafts are safe, even if you reload the page.
+- Drafts auto-load when you revisit `/notes/action/create`.
+- Drafts clear automatically once a note is successfully created.
+
+---
+
+## ⚙️ Technologies
+
+- [Next.js 15+ (App Router)](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [TanStack Query (React Query)](https://tanstack.com/query/latest)
+- [Axios](https://axios-http.com/)
+- [Zustand + Persist](https://github.com/pmndrs/zustand)
+- [CSS Modules](https://github.com/css-modules/css-modules)
+- [React Spinners](https://www.davidhu.io/react-spinners/)
+
+---
+
+## ⚙️ Requirements
+
+- Node.js >= 18
+- npm >= 9
+
+---
+
+## 🔑 Environment Variables
+
+Create `.env.local` at the root of your project:
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:3000
-4️⃣ Run the development server:
+# Example for production:
+# NEXT_PUBLIC_API_URL=https://YOUR_DEPLOYED_URL.vercel.app
+```
 
+✅ Getting Started
+1️⃣ Clone the repository
+2️⃣ Install dependencies
+bash
+npm install
+3️⃣ Add .env.local
+4️⃣ Run the development server
 bash
 npm run dev
-5️⃣ Open http://localhost:3000 in your browser.
+5️⃣ Open http://localhost:3000 in your browser
 
-✅ Deployment
+🧹 Lint & Format
+bash
+npm run lint
+npm run format
+⚡ Deployment
 Deploy easily on Vercel.
-Make sure NEXT_PUBLIC_API_URL points to your deployed Vercel URL.
+Make sure NEXT_PUBLIC_API_URL in your environment variables points to your deployed domain.
+
+⚠️ Known Issues
+No password reset flow implemented yet.
+
+Refresh token rotation might need additional route handlers for full auto-renew.
 
 📄 License
 MIT License.
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+📚 Learn More
+Next.js Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Learn Next.js
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Next.js GitHub
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-```
+✅ Live Demo
+👉 Deploy your NoteHub in minutes — Deploy on Vercel

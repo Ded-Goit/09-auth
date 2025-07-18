@@ -6,10 +6,11 @@ import AuthNavigation from "../AuthNavigation/AuthNavigation";
 const Header = () => {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home" className={css.headerLink}>
+      <Link href="/" className={css.headerLink}>
         NoteHub
       </Link>
-      <nav aria-label="Main Navigation">
+
+      <nav className={css.nav} aria-label="Main Navigation">
         <ul className={css.navigation}>
           <li className={css.navigationItem}>
             <Link href="/" className={css.navigationLink}>
@@ -19,8 +20,9 @@ const Header = () => {
           <li className={css.navigationItem}>
             <TagsMenu />
           </li>
+
+          <AuthNavigation />
         </ul>
-        <AuthNavigation />
       </nav>
     </header>
   );

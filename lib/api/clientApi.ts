@@ -1,10 +1,9 @@
 // lib/api/clientApi.ts
-
 "use client";
 
 import { Note } from "@/types/note";
 import { EditUserPayload } from "@/types/noteApi";
-import { nextServer } from "./api";
+import { clientApi } from "./api";
 import { User } from "@/types/user";
 
 export interface CreateNoteValues {
@@ -60,60 +59,55 @@ export async function fetchNotes(
   if (search) params.search = search;
   if (tag) params.tag = tag;
 
-  try {
-    const res = await nextServer.get<NotesResponse>("/notes", { params });
-    return res.data;
-  } catch (error) {
-    console.error("Error fetching notes:", error);
-    throw new Error("Failed to fetch notes");
-  }
+  const res = await clientApi.get<NotesResponse>("/notes", { params });
+  return res.data;
 }
 
 export async function fetchNoteById(id: string): Promise<Note> {
-  const res = await nextServer.get<Note>(`/notes/${id}`);
+  const res = await clientApi.get<Note>(`/notes/${id}`);
   return res.data;
 }
 
 export async function createNote(values: CreateNoteValues): Promise<Note> {
-  const res = await nextServer.post<Note>("/notes", values);
+  const res = await clientApi.post<Note>("/notes", values);
   return res.data;
 }
 
 export async function deleteNote(id: string): Promise<Note> {
-  const res = await nextServer.delete<Note>(`/notes/${id}`);
+  const res = await clientApi.delete<Note>(`/notes/${id}`);
   return res.data;
 }
 
 export async function registerUser(data: SignUpRequest): Promise<User> {
-  const res = await nextServer.post<User>("/auth/register", data);
+  const res = await clientApi.post<User>("/auth/register", data);
   return res.data;
 }
 
 export async function loginUser(data: LoginRequest): Promise<User> {
-  const res = await nextServer.post<User>("/auth/login", data);
+  const res = await clientApi.post<User>("/auth/login", data);
   return res.data;
 }
 
 export async function logout(): Promise<void> {
-  await nextServer.post("/auth/logout");
+  await clientApi.post("/auth/logout");
 }
 
 export async function checkSession(): Promise<User> {
-  const res = await nextServer.get<User>("/auth/session");
+  const res = await clientApi.get<User>("/auth/session");
   return res.data;
 }
 
 export async function getUserProfile(): Promise<User> {
-  const res = await nextServer.get<User>("/users/me");
+  const res = await clientApi.get<User>("/users/me");
   return res.data;
 }
 
 export async function updateUserProfile(data: UpdateUserData): Promise<User> {
-  const res = await nextServer.patch<User>("/users/me", data);
+  const res = await clientApi.patch<User>("/users/me", data);
   return res.data;
 }
 
 export async function editUser(data: EditUserPayload): Promise<User> {
-  const res = await nextServer.patch<User>("/users/me", data);
+  const res = await clientApi.patch<User>("/users/me", data);
   return res.data;
 }

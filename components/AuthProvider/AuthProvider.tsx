@@ -1,7 +1,8 @@
+//components/AuthProvider/AuthProvider.tsx
 "use client";
 
 import React, { ReactNode, useEffect, useState } from "react";
-import { checkSession } from "@/lib/api/clientApi";
+import { getUserProfile } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 import { PropagateLoader } from "react-spinners";
 
@@ -20,7 +21,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     async function initializeAuth() {
       try {
-        const sessionUser = await checkSession();
+        const sessionUser = await getUserProfile();
         if (sessionUser && sessionUser.email) {
           setUser(sessionUser);
         } else {

@@ -2,7 +2,8 @@
 
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerMe } from "./lib/api/serverApi"; // Використовуємо перевірений варіант!
+import { checkSession } from "./lib/api/serverApi";
+import { parse } from "cookie";
 
 const privateRoutes = ["/profile", "/notes"];
 const publicRoutes = ["/sign-in", "/sign-up"];
@@ -11,30 +12,47 @@ export async function middleware(request: NextRequest) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
-
   const { pathname } = request.nextUrl;
   const isPrivate = privateRoutes.some((route) => pathname.startsWith(route));
   const isPublic = publicRoutes.some((route) => pathname.startsWith(route));
 
-  // Перевірка приватного маршруту
   if (isPrivate) {
-    if (!accessToken) {
-      // Якщо accessToken відсутній, але є refreshToken — пробуємо оновити сесію
-      if (refreshToken) {
-        try {
-          await getServerMe(); // Перевірка сесії через /users/me
-          return NextResponse.next();
-        } catch {
-          return NextResponse.redirect(new URL("/sign-in", request.url));
+    if (!accessToken && refreshToken) {
+      try {
+        const apiRes = await checkSession();
+        const setCookieHeader = apiRes.headers["set-cookie"];
+
+        if (setCookieHeader) {
+          const cookiesArray = Array.isArray(setCookieHeader)
+            ? setCookieHeader
+            : [setCookieHeader];
+
+          for (const cookieStr of cookiesArray) {
+            const parsed = parse(cookieStr);
+            for (const [key, value] of Object.entries(parsed)) {
+              if (
+                ["accessToken", "refreshToken"].includes(key) &&
+                typeof value === "string"
+              ) {
+                Cookie: cookieStore.toString();
+              }
+            }
+          }
         }
+
+        return NextResponse;
+      } catch {
+        return NextResponse.redirect(new URL("/sign-in", request.url));
       }
-      // Якщо немає навіть refreshToken → перенаправляємо на sign-in
+    }
+
+    if (!accessToken) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
-    return NextResponse.next();
+
+    return NextResponse;
   }
 
-  // Публічні маршрути — якщо вже авторизований → редірект на головну
   if (isPublic) {
     if (accessToken) {
       return NextResponse.redirect(new URL("/", request.url));
@@ -42,17 +60,37 @@ export async function middleware(request: NextRequest) {
 
     if (refreshToken) {
       try {
-        await getServerMe();
+        const apiRes = await checkSession();
+        const setCookieHeader = apiRes.headers["set-cookie"];
+
+        if (setCookieHeader) {
+          const cookiesArray = Array.isArray(setCookieHeader)
+            ? setCookieHeader
+            : [setCookieHeader];
+
+          for (const cookieStr of cookiesArray) {
+            const parsed = parse(cookieStr);
+            for (const [key, value] of Object.entries(parsed)) {
+              if (
+                ["accessToken", "refreshToken"].includes(key) &&
+                typeof value === "string"
+              ) {
+                Cookie: cookieStore.toString();
+              }
+            }
+          }
+        }
+
         return NextResponse.redirect(new URL("/", request.url));
       } catch {
-        return NextResponse.next();
+        return NextResponse;
       }
     }
 
-    return NextResponse.next();
+    return NextResponse;
   }
 
-  return NextResponse.next();
+  return NextResponse;
 }
 
 export const config = {

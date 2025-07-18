@@ -1,13 +1,12 @@
 //components/AuthProvider/AuthProvider.tsx
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
-import { getUserProfile } from "@/lib/api/clientApi";
+import { checkSession, getUserProfile } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
-import { PropagateLoader } from "react-spinners";
+import { useEffect } from "react";
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
@@ -16,33 +15,18 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     (state) => state.clearIsAuthenticated
   );
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    async function initializeAuth() {
-      try {
-        const sessionUser = await getUserProfile();
-        if (sessionUser && sessionUser.email) {
-          setUser(sessionUser);
-        } else {
-          clearIsAuthenticated();
-        }
-      } catch {
+    const fetcSession = async () => {
+      const isAuthenticated = await checkSession();
+      if (isAuthenticated) {
+        const user = await getUserProfile();
+        if (user) setUser(user);
+      } else {
         clearIsAuthenticated();
-      } finally {
-        setLoading(false);
       }
-    }
-
-    initializeAuth();
+    };
+    fetcSession();
   }, [setUser, clearIsAuthenticated]);
 
-  if (loading)
-    return (
-      <div>
-        <PropagateLoader color="#0d6efd" size={11} speedMultiplier={2} />
-      </div>
-    );
-
-  return <>{children}</>;
+  return children;
 }

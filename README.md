@@ -149,12 +149,150 @@ Refresh token rotation might need additional route handlers for full auto-renew.
 📄 License
 MIT License.
 
-📚 Learn More
-Next.js Documentation
+✅ Next.js Auth with Cookies — Production Checklist
+A quick, practical checklist to keep your Next.js + API authentication robust, secure, and maintainable.
 
-Learn Next.js
+📌 1️⃣ Environment Variables
 
-Next.js GitHub
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3000 # Or your backend URL if separate
+```
 
-✅ Live Demo
-👉 Deploy your NoteHub in minutes — Deploy on Vercel
+✔️ Use NEXT_PUBLIC_API_URL only if your API runs on a separate backend.
+
+✔️ If your API is inside the same Next.js app — prefer relative URLs (/api).
+
+📌 2️⃣ Axios Instance
+Use one single instance for both client and server API calls.
+
+Example: /lib/api/api.ts
+
+```ts
+import axios from "axios";
+
+const baseURL = process.env.NEXT_PUBLIC_API_URL + "/api";
+
+export const nextServer = axios.create({
+  baseURL,
+  withCredentials: true,
+});
+```
+
+✅ Do not create new axios.create() inside files like serverApi.ts.
+
+✅ Always import { nextServer } from "./api";.
+
+📌 3️⃣ Cookies & Credentials
+✅ withCredentials: true must be set on the Axios instance.
+
+✅ On the server side, pass cookies manually:
+
+```ts
+import { cookies } from "next/headers";
+
+const cookieStore = await cookies();
+
+const { data } = await nextServer.get("/users/me", {
+  headers: {
+    Cookie: cookieStore.toString(),
+  },
+});
+```
+
+✅ Make sure your backend sets cookies as HttpOnly with:
+
+```mathematica
+Set-Cookie: accessToken=...; HttpOnly; Path=/; SameSite=Lax;
+```
+
+or
+
+```ini
+SameSite=None; Secure
+```
+
+for HTTPS cross-origin.
+
+📌 4️⃣ next.config.js — Proxy Rewrite (Optional)
+If you have a separate backend running on a different port/domain:
+
+```js
+/\*_ @type {import('next').NextConfig} _/;
+const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:4000/api/:path*", // your backend
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;
+```
+
+✔️ This makes the browser believe /api is same-origin → cookies work without CORS issues.
+
+📌 5️⃣ Auth Provider
+Your client Auth Provider should:
+
+✅ Check session on mount.
+
+✅ If valid, fetch /users/me to get user profile.
+
+✅ Store user state globally.
+
+Example:
+
+```tsx
+useEffect(() => {
+  const fetchSession = async () => {
+    const isAuthenticated = await checkSession();
+    if (isAuthenticated) {
+      const user = await getUserProfile();
+      if (user) setUser(user);
+    } else {
+      clearIsAuthenticated();
+    }
+  };
+  fetchSession();
+}, []);
+```
+
+📌 6️⃣ Test Checklist
+✔️ Login → DevTools → check Set-Cookie.
+
+✔️ Refresh → check /api/users/me returns user.
+
+✔️ console.log(cookies().toString()) inside server route — should not be empty.
+
+📌 7️⃣ Production Ready
+✅ Use HTTPS in production.
+
+✅ If using SameSite=None → you must use Secure and HTTPS.
+
+✅ Make sure your domain setup allows cookies to flow between client and backend.
+
+✅ Quick Rules
+🔒 1 axios instance.
+
+🔒 withCredentials: true.
+
+🔒 Proxy /api if needed.
+
+🔒 Use cookies() on the server, not req.headers.cookie manually.
+
+🔒 No duplicate axios.create anywhere.
+
+💙 Fully Working
+If all ✅:
+
+Auth persists between page loads.
+
+No 401 on GET /api/users/me.
+
+SSR and client both get the same user.
+
+Now ship it — safe, clean and maintainable.
+🇺🇦✨ Good luck! 🚀

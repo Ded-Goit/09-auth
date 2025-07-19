@@ -1,7 +1,7 @@
+//app/api/auth/refresh/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { api } from "../../api";
-import { parse } from "cookie";
 import { isAxiosError } from "axios";
 import { logErrorResponse } from "../../_utils/utils";
 
@@ -17,28 +17,23 @@ export async function GET(request: NextRequest) {
           Cookie: cookieStore.toString(),
         },
       });
-      const setCookie = apiRes.headers["set-cookie"];
-      if (setCookie) {
-        const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
-        let accessToken = "";
-        let refreshToken = "";
 
-        for (const cookieStr of cookieArray) {
-          const parsed = parse(cookieStr);
-          if (parsed.accessToken) accessToken = parsed.accessToken;
-          if (parsed.refreshToken) refreshToken = parsed.refreshToken;
+      const setCookieHeader = apiRes.headers["set-cookie"];
+      if (setCookieHeader) {
+        const response = NextResponse.redirect(new URL(next, request.url));
+
+        const cookiesArray = Array.isArray(setCookieHeader)
+          ? setCookieHeader
+          : [setCookieHeader];
+
+        for (const cookieStr of cookiesArray) {
+          response.headers.append("Set-Cookie", cookieStr);
         }
 
-        if (accessToken) cookieStore.set("accessToken", accessToken);
-        if (refreshToken) cookieStore.set("refreshToken", refreshToken);
-
-        return NextResponse.redirect(new URL(next, request.url), {
-          headers: {
-            "set-cookie": cookieStore.toString(),
-          },
-        });
+        return response;
       }
     }
+
     return NextResponse.redirect(new URL("/sign-in", request.url));
   } catch (error) {
     if (isAxiosError(error)) {
